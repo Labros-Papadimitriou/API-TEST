@@ -1,0 +1,178 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <link href="Content/bootstrap.css" rel="stylesheet" />
+    <meta charset="utf-8" />
+    <title>Nobelists Finder</title>
+</head>
+<body style="background-color:#2f2f2f">
+
+    <div class="container" style="background-image: linear-gradient(to top, #c8c8c8, #ffffff);">
+
+        <div class="row mt-3">
+            <div class="col-2">
+                <label for="myYear"><strong>Choose By Year</strong></label>
+                <input id="myYear" style="width:115px;" class="input-group form-control" type="number" value="" placeholder="1901-2021" required />
+                <button id="myBtnYear" class="btn btn-primary btn-dark mt-2">Filter</button>
+            </div>
+            <div class="col-8 d-flex flex-column-reverse">
+                <h1 class="text-center" style="font-family:serif, sans-serif">WELCOME TO NOBEL-PRIZE FINDER</h1>
+            </div>
+            <div class="col-2">
+                <label for="myCategory"><strong>Choose By Category</strong></label>
+                <div class="form-check mt-2">
+                    <select id="myCategory" class="form-control" size="1">
+                        <option value="chemistry" selected>Chemistry</option>
+                        <option value="economics" selected>Economics</option>
+                        <option value="literature">Literature</option>
+                        <option value="peace">Peace</option>
+                        <option value="physics">Physics</option>
+                        <option value="medicine">Medicine</option>
+                    </select>
+                </div>
+                <button id="myBtnCategory" class="btn btn-primary btn-dark mt-2 float-right">Filter</button>
+            </div>
+        </div>
+        <hr />
+        <div id="myImage" class="row">
+            <div class="col">
+                <img class="w-100" src="https://images.newscientist.com/wp-content/uploads/2021/11/08152648/einstein.jpg?width=1200&enable=upscale" alt="Einstein" />
+            </div>
+        </div>
+        <div class="row">
+            <div class="col">
+                <h2 id="header" class="text-center"></h2>
+                <table class="table table-striped text-center">
+                </table>
+            </div>
+        </div>
+
+    </div>
+
+
+    <script src="Scripts/jquery-3.6.0.js"></script>
+    <script>
+        function byYear() {
+            function showTable() {
+                let templateThead = `
+                                            <thead>
+                                                <tr>
+                                                    <th style="width:13%">First Name</th>
+                                                    <th style="width:13%">Last Name</th>
+                                                    <th style="width:13%">Category</th>
+                                                    <th style="width:61%">Motivation</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                            </tbody>
+                                            `
+                let thead = $(templateThead);
+                $("table").append(thead);
+            }
+            let year = $("#myYear").val();
+            let myUrl = "http://api.nobelprize.org/v1/prize.json?year=" + year;
+            if (!(year.match(/19.[1-9]|20(0|1).|202(0|1)/))) {
+                return
+            }
+
+            $.ajax({
+                type: "GET",
+                url: myUrl,
+                dataType: "json",
+                success: function (person) {
+                    function fillRows() {
+                        for (let i = 0; i < person.prizes.length; i++) {
+                            let category = person.prizes[i].category;
+                            for (let j = 0; j < person.prizes[i].laureates.length; j++) {
+                                let firstname = person.prizes[i].laureates[j].firstname;
+                                let surname = person.prizes[i].laureates[j].surname;
+                                let motivation = person.prizes[i].laureates[j].motivation;
+
+                                let templateRows = `
+                                                <tr>
+                                                    <td class="align-middle">${firstname}</td>
+                                                    <td class="align-middle">${surname}</td>
+                                                    <td class="align-middle">${category}</td>
+                                                    <td class="align-middle">${motivation}</td>
+                                                </tr>
+                                               `;
+                                let row = $(templateRows);
+                                $("tbody").append(row);
+                            }
+                        }
+                    }
+                    $("#header").text(year + " " + "YEAR");
+                    $("#myImage").remove();
+                    $("tbody > tr").remove();
+                    $("thead,tbody").remove();
+                    showTable();
+                    fillRows();
+                }
+            });
+
+        }
+        function byCategory() {
+            function showTable() {
+                let templateThead = `
+                                            <thead>
+                                                <tr>
+                                                    <th style="width:4%">Year</th>
+                                                    <th style="width:12%">First Name</th>
+                                                    <th style="width:12%">Last Name</th>
+                                                    <th style="width:12%">Category</th>
+                                                    <th style="width:60%">Motivation</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                            </tbody>
+                                            `
+                let thead = $(templateThead);
+                $("table").append(thead);
+            }
+            let category = $("#myCategory").val();
+            let myUrl = "http://api.nobelprize.org/v1/prize.json?category=" + category;
+
+            $.ajax({
+                type: "GET",
+                url: myUrl,
+                dataType: "json",
+                success: function (person) {
+                    function fillRows() {
+                        for (let i = 0; i < person.prizes.length; i++) {
+                            let category = person.prizes[i].category;
+                            let year = person.prizes[i].year;
+                            for (let j = 0; j < person.prizes[i].laureates.length; j++) {
+                                let firstname = person.prizes[i].laureates[j].firstname;
+                                let surname = person.prizes[i].laureates[j].surname;
+                                let motivation = person.prizes[i].laureates[j].motivation;
+
+                                let templateRows = `
+                                                <tr>
+                                                    <td class="align-middle">${year}</td>
+                                                    <td class="align-middle">${firstname}</td>
+                                                    <td class="align-middle">${surname}</td>
+                                                    <td class="align-middle">${category}</td>
+                                                    <td class="align-middle">${motivation}</td>
+                                                </tr>
+                                               `;
+                                let row = $(templateRows);
+                                $("tbody").append(row);
+                            }
+                        }
+                    }
+                    $("#header").text(category[0].toUpperCase() + category.slice(1, category.length));
+                    $("#myImage").remove();
+                    $("tbody > tr").remove();
+                    $("thead,tbody").remove();
+                    showTable();
+                    fillRows();
+                }
+            });
+        }
+        $("#myBtnYear").click(byYear);
+        $("#myBtnCategory").click(byCategory);
+
+    </script>
+
+</body>
+</html>
